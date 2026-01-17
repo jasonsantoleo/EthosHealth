@@ -1,11 +1,6 @@
 import React from "react";
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-// Ensure React is available for @tanstack/react-query
-if (!React) {
-  throw new Error("React must be imported before @tanstack/react-query");
-}
-
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -35,7 +30,14 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    // Build URL from queryKey - handle both string and array queryKeys
+    const url = Array.isArray(queryKey) 
+      ? queryKey.join("/") 
+      : typeof queryKey === "string" 
+        ? queryKey 
+        : String(queryKey);
+    
+    const res = await fetch(url, {
       credentials: "include",
     });
 
@@ -50,7 +52,7 @@ export const getQueryFn: <T>(options: {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
+      // Remove default queryFn - queries should define their own
       refetchInterval: false,
       refetchOnWindowFocus: false,
       staleTime: Infinity,
