@@ -295,54 +295,6 @@ npm run test:integration
 - **Uptime**: 99.9%
 - **User Satisfaction**: 4.8/5 stars
 
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-### Development Workflow
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Test with Sepolia ETH
-6. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-- **Documentation**: [docs.ethoshealth.com](https://docs.ethoshealth.com)
-- **Support Email**: support@ethoshealth.com
-- **Support Phone**: 1800-ETHOS-HEALTH
-- **Live Chat**: Available 24/7 on the platform
-- **Ethereum Help**: [ethereum.org](https://ethereum.org/en/developers/)
-
-## Roadmap
-
-### Phase 1 (Current)
-- Core platform development
-- ABHA ID integration
-- Ethereum wallet setup with ETH support
-- Basic scheme management with ETH vouchers
-
-### Phase 2 (Q2 2024)
-- Advanced AI recommendations
-- Multi-language support
-- Mobile app with MetaMask integration
-- Advanced ETH transaction analytics
-- Layer 2 scaling solutions for lower ETH gas fees
-
-### Phase 3 (Q3 2024)
-- International expansion
-- Advanced Ethereum smart contract features
-- Machine learning optimization
-- ETH staking integration
-- Decentralized Autonomous Organization (DAO) for governance
-
-## Ethereum Benefits for Healthcare
-
 **Why EthosHealth uses ETH:**
 
 1. **Transparency** - All healthcare payments are publicly verifiable on Ethereum blockchain
@@ -354,23 +306,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 7. **Privacy** - While transactions are on-chain, user identities remain pseudonymous
 8. **Innovation** - Leveraging the most advanced blockchain ecosystem for healthcare
 
-## Acknowledgments
-
-- **Government of India** for healthcare scheme data
-- **Ethereum Foundation** for building the world's most trusted blockchain platform
-- **Ethereum community** for wallet tooling and infrastructure
-- **Open Source Community** for amazing tools
-- **Healthcare Providers** for collaboration
-
-## Contact
-
-- **Website**: [ethoshealth.com](https://ethoshealth.com)
-- **Email**: hello@ethoshealth.com
-- **Twitter**: [@ethoshealth](https://twitter.com/ethoshealth)
-- **LinkedIn**: [EthosHealth](https://linkedin.com/company/ethoshealth)
-- **Ethereum Community**: Join our Discord for ETH-related discussions
-
----
 
 <div align="center">
 
