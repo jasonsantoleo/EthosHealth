@@ -16,7 +16,7 @@ export default function AiRecommendation() {
   const [hasAutoLoaded, setHasAutoLoaded] = useState(false);
   const { toast } = useToast();
 
-  const handleAnalyze = (providedHealthId?: string) => {
+  const handleAnalyze = async (providedHealthId?: string) => {
     const abhaId = (providedHealthId ?? healthIdInput).trim();
     if (!abhaId) {
       toast({
@@ -27,29 +27,70 @@ export default function AiRecommendation() {
       return;
     }
 
-    // Create mock profile for demo
-    const profile = {
-      id: abhaId,
-      patientName: "John Doe",
-      dateOfBirth: "1988-05-15",
-      nationalId: "NID123456",
-      bloodGroup: "A+",
-      medicalConditions: "Diabetes Type 2, Hypertension",
-      emergencyContact: "+1-555-0123",
-      createdAt: new Date(),
-    };
+    try {
+      // Fetch user profile from API
+      const response = await fetch(`/api/wallet/user/${abhaId}`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          toast({
+            title: "User Not Found",
+            description: "This ABHA ID is not registered. Please register first or use a valid ABHA ID.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw new Error('Failed to fetch user profile');
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success || !data.user) {
+        throw new Error('Invalid response from server');
+      }
+      
+      const user = data.user;
+      
+      // Calculate age from dateOfBirth
+      const birthYear = new Date(user.dateOfBirth || '1988-05-15').getFullYear();
+      const age = new Date().getFullYear() - birthYear;
+      
+      // Create profile from API data
+      const profile = {
+        id: abhaId,
+        patientName: user.name,
+        dateOfBirth: user.dateOfBirth || "1988-05-15",
+        nationalId: abhaId,
+        bloodGroup: user.bloodGroup || "Not specified",
+        medicalConditions: user.medicalConditions || "None",
+        emergencyContact: user.emergencyContact || "Not provided",
+        age: age,
+        createdAt: new Date(),
+      };
 
-    setPatientProfile(profile);
-    setShowProfile(true);
+      setPatientProfile(profile);
+      setShowProfile(true);
 
-    // Show recommendations after a delay
-    setTimeout(() => {
-      setShowRecommendations(true);
+      // Store user profile in localStorage for other pages
+      localStorage.setItem('abha_id', abhaId);
+      localStorage.setItem('user_profile', JSON.stringify(user));
+
+      // Show recommendations after a delay
+      setTimeout(() => {
+        setShowRecommendations(true);
+        toast({
+          title: "AI Analysis Completed",
+          description: "Your personalized recommendations are ready!",
+        });
+      }, 1500);
+    } catch (error) {
+      console.error('Analysis error:', error);
       toast({
-        title: "AI Analysis Completed",
-        description: "Your personalized recommendations are ready!",
+        title: "Analysis Failed",
+        description: "Failed to analyze ABHA ID. Please try again or ensure the server is running.",
+        variant: "destructive",
       });
-    }, 1500);
+    }
   };
 
   // Auto-fill ABHA ID from earlier steps (wallet setup / create health ID)
@@ -185,18 +226,47 @@ export default function AiRecommendation() {
                   <div className="bg-white rounded-lg p-4">
                     <h4 className="font-semibold text-gray-700 mb-2">Basic Information</h4>
                     <p className="text-gray-600"><strong>Name:</strong> {patientProfile.patientName}</p>
-                    <p className="text-gray-600"><strong>Age:</strong> {new Date().getFullYear() - new Date(patientProfile.dateOfBirth).getFullYear()} years</p>
+                    <p className="text-gray-600"><strong>Age:</strong> {patientProfile.age || (new Date().getFullYear() - new Date(patientProfile.dateOfBirth).getFullYear())} years</p>
                     <p className="text-gray-600"><strong>Blood Group:</strong> {patientProfile.bloodGroup}</p>
                   </div>
                   <div className="bg-white rounded-lg p-4">
                     <h4 className="font-semibold text-gray-700 mb-2">Health Status</h4>
-                    <p className="text-gray-600"><strong>Conditions:</strong> {patientProfile.medicalConditions}</p>
-                    <p className="text-gray-600"><strong>Risk Level:</strong> <span className="text-medilinkx-orange font-semibold">Medium</span></p>
+                    <p className="text-gray-600"><strong>Conditions:</strong> {patientProfile.medicalConditions || 'None'}</p>
+                    <p className="text-gray-600">
+                      <strong>Risk Level:</strong> {' '}
+                      <span className={`font-semibold ${
+                        (patientProfile.medicalConditions?.toLowerCase().includes('heart') || 
+                         patientProfile.medicalConditions?.toLowerCase().includes('emergency')) 
+                          ? 'text-red-600' 
+                          : patientProfile.medicalConditions?.toLowerCase().includes('diabetes')
+                          ? 'text-orange-600'
+                          : 'text-green-600'
+                      }`}>
+                        {(patientProfile.medicalConditions?.toLowerCase().includes('heart') || 
+                          patientProfile.medicalConditions?.toLowerCase().includes('emergency')) 
+                          ? 'High' 
+                          : patientProfile.medicalConditions?.toLowerCase().includes('diabetes')
+                          ? 'Medium'
+                          : 'Low'}
+                      </span>
+                    </p>
                   </div>
                   <div className="bg-white rounded-lg p-4">
                     <h4 className="font-semibold text-gray-700 mb-2">Eligibility Score</h4>
                     <div className="flex items-center">
-                      <div className="bg-medilinkx-green text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-3">85</div>
+                      <div className={`text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-3 ${
+                        patientProfile.age && patientProfile.age > 50 
+                          ? 'bg-green-600' 
+                          : patientProfile.medicalConditions?.toLowerCase().includes('diabetes')
+                          ? 'bg-green-600'
+                          : 'bg-blue-600'
+                      }`}>
+                        {patientProfile.age && patientProfile.age > 50 
+                          ? 92 
+                          : patientProfile.medicalConditions?.toLowerCase().includes('diabetes')
+                          ? 95
+                          : 85}
+                      </div>
                       <span className="text-medilinkx-green font-semibold">Highly Eligible</span>
                     </div>
                   </div>
@@ -215,10 +285,46 @@ export default function AiRecommendation() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {mockSchemes.map((scheme) => {
-                    const matchColor = getMatchColor(scheme.matchPercentage);
-                    const badgeColor = getMatchBadgeColor(scheme.matchPercentage);
+                    // Calculate dynamic match percentage based on user's medical conditions
+                    let matchPercentage = scheme.matchPercentage;
+                    if (patientProfile?.medicalConditions) {
+                      const conditions = patientProfile.medicalConditions.toLowerCase();
+                      const age = patientProfile.age || 35;
+                      
+                      // Diabetes care matching
+                      if (scheme.type === 'diabetes-care' && conditions.includes('diabetes')) {
+                        matchPercentage = 95;
+                      } else if (scheme.type === 'diabetes-care') {
+                        matchPercentage = 60;
+                      }
+                      
+                      // Emergency care matching
+                      if (scheme.type === 'emergency-care' && (conditions.includes('emergency') || conditions.includes('heart') || conditions.includes('asthma'))) {
+                        matchPercentage = 92;
+                      } else if (scheme.type === 'emergency-care') {
+                        matchPercentage = 70;
+                      }
+                      
+                      // Family care matching
+                      if (scheme.type === 'family-care' && age > 30) {
+                        matchPercentage = 85;
+                      } else if (scheme.type === 'family-care') {
+                        matchPercentage = 65;
+                      }
+                      
+                      // General health matching
+                      if (scheme.type === 'general-health' && age > 50) {
+                        matchPercentage = 90;
+                      } else if (scheme.type === 'general-health' && conditions === 'none' || conditions === 'general health') {
+                        matchPercentage = 87;
+                      }
+                    }
+                    
+                    const matchColor = getMatchColor(matchPercentage);
+                    const badgeColor = getMatchBadgeColor(matchPercentage);
                     const SchemeIcon = scheme.type === 'diabetes-care' ? Heart : 
-                                     scheme.type === 'general-health' ? Shield : Users;
+                                     scheme.type === 'general-health' ? Shield : 
+                                     scheme.type === 'emergency-care' ? Shield : Users;
                     const isApplied = autoAppliedSchemes.has(scheme.id);
 
                     return (
@@ -229,7 +335,7 @@ export default function AiRecommendation() {
                       >
                         <div className="flex items-center justify-between mb-4">
                           <span className={`${badgeColor} text-white px-3 py-1 rounded-full text-sm font-semibold`}>
-                            {scheme.matchPercentage}% Match
+                            {matchPercentage}% Match
                           </span>
                           {isApplied ? (
                             <CheckCircle className="h-6 w-6 text-green-600" />

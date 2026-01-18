@@ -26,9 +26,9 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">HC</span>
+              <span className="text-white font-bold text-sm">EH</span>
             </div>
-            <span className="text-xl font-bold text-gray-800">HealthChainAI</span>
+            <span className="text-xl font-bold text-gray-800">EthosHealth</span>
           </Link>
 
           {/* Desktop Navigation */}

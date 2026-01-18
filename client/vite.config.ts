@@ -29,7 +29,6 @@ export default defineConfig({
     esbuildOptions: {
       resolveExtensions: [".jsx", ".js", ".ts", ".tsx"],
     },
-    force: true,
   },
   build: {
     commonjsOptions: {
@@ -39,6 +38,9 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    hmr: {
+      overlay: true,
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:5000',

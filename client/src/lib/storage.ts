@@ -106,6 +106,16 @@ export const mockSchemes = [
     matchPercentage: 78,
     type: 'family-care' as const,
   },
+  {
+    id: 'emergency-care',
+    name: 'Emergency Care Plus',
+    description: 'Specialized emergency care coverage with 24/7 support, ambulance services, critical care coverage, and immediate medical attention.',
+    coverage: 10000,
+    processingTime: 'Immediate',
+    networkHospitals: 1200,
+    matchPercentage: 92,
+    type: 'emergency-care' as const,
+  },
 ];
 
 // Mock hospitals

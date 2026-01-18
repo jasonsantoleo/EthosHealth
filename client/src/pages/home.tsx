@@ -33,7 +33,7 @@ export default function Home() {
             <div className="flex items-center justify-center mb-6">
               <Heart className="w-12 h-12 text-red-400 mr-3" />
               <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                HealthChainAI
+                EthosHealth
               </h1>
             </div>
             <p className="text-xl md:text-2xl text-blue-100 max-w-4xl mx-auto mb-8 leading-relaxed">
@@ -103,7 +103,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              How HealthChainAI Works
+              How EthosHealth Works
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Our streamlined 7-step process ensures seamless healthcare access from ABHA ID verification to instant hospital payments
@@ -224,7 +224,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Why Choose HealthChainAI?
+              Why Choose EthosHealth?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Experience the future of healthcare with our cutting-edge technology and user-centric approach
@@ -358,7 +358,7 @@ export default function Home() {
             Ready to Transform Your Healthcare Experience?
           </h2>
             <p className="text-xl text-blue-100 mb-8">
-            Join thousands of users who have already simplified their healthcare journey with HealthChainAI
+            Join thousands of users who have already simplified their healthcare journey with EthosHealth
           </p>
           <Link href="/create-healthid">
             <button className="bg-white text-blue-600 px-10 py-4 rounded-full font-semibold text-lg hover:bg-blue-50 transition-all duration-300 flex items-center gap-2 mx-auto shadow-lg hover:shadow-xl transform hover:-translate-y-1">
@@ -376,7 +376,7 @@ export default function Home() {
             <div>
               <div className="flex items-center mb-4">
                 <Heart className="w-8 h-8 text-red-400 mr-2" />
-                <span className="text-2xl font-bold">HealthChainAI</span>
+                <span className="text-2xl font-bold">EthosHealth</span>
               </div>
               <p className="text-gray-400 mb-4">
                 Revolutionizing healthcare access through technology and innovation
@@ -431,7 +431,7 @@ export default function Home() {
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center">
             <p className="text-gray-400">
-              © 2024 HealthChainAI. All rights reserved. Built with ❤️ for better healthcare.
+              © 2024 EthosHealth. All rights reserved. Built with ❤️ for better healthcare.
             </p>
           </div>
         </div>

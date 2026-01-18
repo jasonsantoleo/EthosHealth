@@ -24,24 +24,93 @@ export default function WalletSetup() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load user profile from localStorage
-    const loadUserProfile = () => {
+    // Load user profile from API or localStorage
+    const loadUserProfile = async () => {
       try {
         const abhaId = localStorage.getItem('abha_id');
-        if (abhaId) {
-          // Create mock user profile
-          const profile: UserProfile = {
-            abha_id: abhaId,
-            name: "John Doe",
-            dateOfBirth: "1988-05-15",
-            walletBalance: 0,
-            coinbaseAddress: "",
-            transactions: []
-          };
-          setUserProfile(profile);
+        if (!abhaId) {
+          toast({
+            title: "ABHA ID Required",
+            description: "Please enter your ABHA ID first on the Create HealthID page.",
+            variant: "destructive",
+          });
+          return;
         }
-      } catch (error) {
+
+        // First try to get from localStorage (faster)
+        const storedProfile = localStorage.getItem('user_profile');
+        if (storedProfile) {
+          try {
+            const user = JSON.parse(storedProfile);
+            const profile: UserProfile = {
+              abha_id: user.abha_id,
+              name: user.name,
+              dateOfBirth: user.dateOfBirth || "1988-05-15",
+              walletBalance: user.wallet_balance || 0,
+              coinbaseAddress: user.coinbase_wallet_address || "",
+              transactions: user.transactions || []
+            };
+            setUserProfile(profile);
+            
+            // Check if wallet is already connected
+            if (user.coinbase_wallet_address) {
+              setWalletConnected(true);
+            }
+            return;
+          } catch (e) {
+            console.error('Error parsing stored profile:', e);
+          }
+        }
+
+        // If not in localStorage, fetch from API
+        const response = await fetch(`/api/wallet/user/${abhaId}`);
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            toast({
+              title: "User Not Found",
+              description: `ABHA ID ${abhaId} is not registered. Please run 'npm run seed:users' to seed the database.`,
+              variant: "destructive",
+            });
+            return;
+          }
+          throw new Error('Failed to fetch user profile');
+        }
+
+        const data = await response.json();
+        
+        if (!data.success || !data.user) {
+          throw new Error('Invalid response from server');
+        }
+
+        const user = data.user;
+        
+        // Create user profile from API data
+        const profile: UserProfile = {
+          abha_id: user.abha_id,
+          name: user.name,
+          dateOfBirth: user.dateOfBirth || "1988-05-15",
+          walletBalance: user.wallet_balance || 0,
+          coinbaseAddress: user.coinbase_wallet_address || "",
+          transactions: user.transactions || []
+        };
+        
+        setUserProfile(profile);
+        
+        // Store in localStorage for future use
+        localStorage.setItem('user_profile', JSON.stringify(user));
+        
+        // Check if wallet is already connected
+        if (user.coinbase_wallet_address) {
+          setWalletConnected(true);
+        }
+      } catch (error: any) {
         console.error('Error loading user profile:', error);
+        toast({
+          title: "Failed to Load Profile",
+          description: error.message || "Could not load user profile. Please ensure the server is running.",
+          variant: "destructive",
+        });
       }
     };
 
@@ -49,37 +118,70 @@ export default function WalletSetup() {
   }, []);
 
   const handleConnectWallet = async () => {
+    if (!userProfile) return;
+    
     setIsConnecting(true);
     
     try {
-      // Simulate wallet connection
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Call API to connect wallet
+      const response = await fetch('/api/wallet/connect-wallet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          abha_id: userProfile.abha_id
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to connect wallet' }));
+        throw new Error(errorData.message || 'Failed to connect wallet');
+      }
+
+      const data = await response.json();
       
-      // Generate mock Ethereum wallet address
-      const mockAddress = `0x${Math.random().toString(16).substr(2, 40)}`;
-      
-      if (userProfile) {
+      if (data.success && data.wallet_address) {
         const updatedProfile = {
           ...userProfile,
-          coinbaseAddress: mockAddress
+          coinbaseAddress: data.wallet_address
         };
         setUserProfile(updatedProfile);
         setWalletConnected(true);
         
-        // Store wallet address in localStorage
-        localStorage.setItem('wallet_address', mockAddress);
+        // Update localStorage
+        const storedProfile = localStorage.getItem('user_profile');
+        if (storedProfile) {
+          const user = JSON.parse(storedProfile);
+          user.coinbase_wallet_address = data.wallet_address;
+          localStorage.setItem('user_profile', JSON.stringify(user));
+        }
+        localStorage.setItem('wallet_address', data.wallet_address);
         
         toast({
           title: "Wallet Connected Successfully!",
-          description: `Connected to Ethereum wallet: ${mockAddress.substring(0, 8)}...${mockAddress.substring(mockAddress.length - 6)}`,
+          description: `Connected to Ethereum wallet: ${data.wallet_address.substring(0, 8)}...${data.wallet_address.substring(data.wallet_address.length - 6)}`,
         });
+      } else {
+        throw new Error('Invalid response from server');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Wallet connection error:', error);
+      
+      // Fallback to mock address if API fails (for demo purposes)
+      const mockAddress = userProfile.coinbaseAddress || `0x${Math.random().toString(16).substr(2, 40)}`;
+      const updatedProfile = {
+        ...userProfile,
+        coinbaseAddress: mockAddress
+      };
+      setUserProfile(updatedProfile);
+      setWalletConnected(true);
+      
+      localStorage.setItem('wallet_address', mockAddress);
+      
       toast({
-        title: "Wallet Connection Failed",
-        description: "Failed to connect wallet. Please try again.",
-        variant: "destructive",
+        title: "Wallet Connected (Demo Mode)",
+        description: `Connected to Ethereum wallet: ${mockAddress.substring(0, 8)}...${mockAddress.substring(mockAddress.length - 6)}`,
       });
     } finally {
       setIsConnecting(false);
@@ -148,6 +250,19 @@ export default function WalletSetup() {
   };
 
   const getMockTransactions = () => {
+    // Use actual transactions from user profile if available
+    if (userProfile?.transactions && userProfile.transactions.length > 0) {
+      return userProfile.transactions.map((tx: any) => ({
+        id: tx.id || `tx-${Date.now()}`,
+        type: tx.type || 'fund',
+        amount: tx.amount || 0,
+        status: tx.status || 'completed',
+        timestamp: tx.timestamp ? (typeof tx.timestamp === 'string' ? tx.timestamp : tx.timestamp.toISOString()) : new Date().toISOString(),
+        description: tx.description || 'Transaction'
+      }));
+    }
+    
+    // Fallback to mock transactions if none available
     return [
       {
         id: 'tx-001',
@@ -200,7 +315,7 @@ export default function WalletSetup() {
                 <div className="bg-white rounded-lg p-4">
                   <h4 className="font-semibold text-gray-700 mb-2">Personal Information</h4>
                   <p className="text-gray-600"><strong>Name:</strong> {userProfile.name}</p>
-                  <p className="text-gray-600"><strong>ABHA ID:</strong> {userProfile.abha_id}</p>
+                  <p className="text-gray-600"><strong>ABHA ID:</strong> <span className="font-mono">{userProfile.abha_id}</span></p>
                   <p className="text-gray-600"><strong>Date of Birth:</strong> {userProfile.dateOfBirth}</p>
                 </div>
                 <div className="bg-white rounded-lg p-4">

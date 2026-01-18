@@ -1,0 +1,1330 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediLinkX - Decentralized Health Identity & Smart Benefits Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007BFF',
+                        success: '#28A745', 
+                        warning: '#FF8800',
+                        danger: '#DC3545',
+                        background: '#FFFFFF',
+                        'glass-bg': 'rgba(255, 255, 255, 0.25)',
+                        'glass-border': 'rgba(255, 255, 255, 0.18)'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    },
+                    backdropBlur: {
+                        xs: '2px'
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #007BFF 0%, #28A745 100%);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-in-out;
+        }
+        
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .notification-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .wallet-card {
+            background: linear-gradient(135deg, rgba(0, 123, 255, 0.1) 0%, rgba(40, 167, 69, 0.1) 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Navigation -->
+    <nav class="glassmorphism fixed top-0 w-full z-50 backdrop-blur-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-heartbeat text-primary text-2xl mr-3"></i>
+                    <span class="text-xl font-bold text-gray-800">MediLinkX</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <button onclick="showPage('home')" class="nav-link text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</button>
+                        <button onclick="showPage('create-health-id')" class="nav-link text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Create HealthID</button>
+                        <button onclick="showPage('ai-recommendation')" class="nav-link text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">AI Recommendation</button>
+                        <button onclick="showPage('schemes')" class="nav-link text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Schemes</button>
+                        <button onclick="showPage('wallet')" class="nav-link text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Wallet</button>
+                        <button onclick="showPage('receipt')" class="nav-link text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Receipt</button>
+                        <button onclick="showPage('about')" class="nav-link text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">About</button>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button onclick="toggleMobileMenu()" class="text-gray-700 hover:text-primary">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="md:hidden hidden glassmorphism">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <button onclick="showPage('home')" class="nav-link block text-gray-700 hover:text-primary px-3 py-2 rounded-md text-base font-medium">Home</button>
+                <button onclick="showPage('create-health-id')" class="nav-link block text-gray-700 hover:text-primary px-3 py-2 rounded-md text-base font-medium">Create HealthID</button>
+                <button onclick="showPage('ai-recommendation')" class="nav-link block text-gray-700 hover:text-primary px-3 py-2 rounded-md text-base font-medium">AI Recommendation</button>
+                <button onclick="showPage('schemes')" class="nav-link block text-gray-700 hover:text-primary px-3 py-2 rounded-md text-base font-medium">Schemes</button>
+                <button onclick="showPage('wallet')" class="nav-link block text-gray-700 hover:text-primary px-3 py-2 rounded-md text-base font-medium">Wallet</button>
+                <button onclick="showPage('receipt')" class="nav-link block text-gray-700 hover:text-primary px-3 py-2 rounded-md text-base font-medium">Receipt</button>
+                <button onclick="showPage('about')" class="nav-link block text-gray-700 hover:text-primary px-3 py-2 rounded-md text-base font-medium">About</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="pt-16">
+        <!-- 1. Landing Page (Home) -->
+        <div id="home" class="page active">
+            <!-- Hero Section -->
+            <section class="gradient-bg min-h-screen flex items-center justify-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-black opacity-10"></div>
+                <div class="relative z-10 max-w-4xl mx-auto text-center px-4 text-white">
+                    <div class="fade-in">
+                        <i class="fas fa-shield-alt text-6xl mb-6"></i>
+                        <h1 class="text-5xl md:text-6xl font-bold mb-6">MediLinkX</h1>
+                        <p class="text-xl md:text-2xl mb-4 opacity-90">Decentralized Health Identity & Smart Benefits Platform</p>
+                        <p class="text-lg mb-8 opacity-80">Secure, AI-powered healthcare management on the blockchain</p>
+                        <button onclick="showPage('create-health-id')" class="bg-white text-primary px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg">
+                            Create Your HealthID
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Info Cards Section -->
+            <section class="py-20 bg-gray-50">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-16 slide-up">
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Revolutionary Healthcare Solutions</h2>
+                        <p class="text-xl text-gray-600 max-w-3xl mx-auto">Experience the future of healthcare with blockchain security, AI intelligence, and seamless benefit management</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <!-- HealthID Card -->
+                        <div class="glassmorphism rounded-xl p-6 text-center hover:transform hover:scale-105 transition-all slide-up">
+                            <div class="bg-primary bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-id-card text-primary text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">Decentralized HealthID</h3>
+                            <p class="text-gray-600">Secure, blockchain-based health identity that you own and control completely</p>
+                        </div>
+
+                        <!-- AI Recommendations Card -->
+                        <div class="glassmorphism rounded-xl p-6 text-center hover:transform hover:scale-105 transition-all slide-up">
+                            <div class="bg-success bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-brain text-success text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">AI Health Insights</h3>
+                            <p class="text-gray-600">Personalized scheme recommendations powered by advanced AI algorithms</p>
+                        </div>
+
+                        <!-- Auto-Apply Card -->
+                        <div class="glassmorphism rounded-xl p-6 text-center hover:transform hover:scale-105 transition-all slide-up">
+                            <div class="bg-warning bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-magic text-warning text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">Smart Auto-Apply</h3>
+                            <p class="text-gray-600">Automatically apply to eligible health schemes with one-click automation</p>
+                        </div>
+
+                        <!-- Secure Vouchers Card -->
+                        <div class="glassmorphism rounded-xl p-6 text-center hover:transform hover:scale-105 transition-all slide-up">
+                            <div class="bg-primary bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-wallet text-primary text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">Crypto Vouchers</h3>
+                            <p class="text-gray-600">Secure digital vouchers stored in your crypto wallet for instant payments</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="bg-gray-800 text-white py-12">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div>
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-heartbeat text-primary text-2xl mr-3"></i>
+                                <span class="text-xl font-bold">MediLinkX</span>
+                            </div>
+                            <p class="text-gray-400">Revolutionizing healthcare through blockchain technology and AI-powered solutions.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                            <ul class="space-y-2">
+                                <li><button onclick="showPage('create-health-id')" class="text-gray-400 hover:text-white transition-colors">Create HealthID</button></li>
+                                <li><button onclick="showPage('ai-recommendation')" class="text-gray-400 hover:text-white transition-colors">AI Recommendations</button></li>
+                                <li><button onclick="showPage('wallet')" class="text-gray-400 hover:text-white transition-colors">Wallet</button></li>
+                                <li><button onclick="showPage('about')" class="text-gray-400 hover:text-white transition-colors">About Us</button></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-4">Contact</h4>
+                            <ul class="space-y-2 text-gray-400">
+                                <li><i class="fas fa-envelope mr-2"></i> support@medilinkx.com</li>
+                                <li><i class="fas fa-phone mr-2"></i> +1 (555) 123-4567</li>
+                                <li><i class="fas fa-map-marker-alt mr-2"></i> Healthcare District, Tech City</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                        <p>&copy; 2024 MediLinkX. All rights reserved. | Powered by Blockchain & AI Technology</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <!-- 2. HealthID Creation Page -->
+        <div id="create-health-id" class="page">
+            <section class="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-20">
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-12 fade-in">
+                        <h1 class="text-4xl font-bold text-gray-800 mb-4">Create Your Secure HealthID</h1>
+                        <p class="text-xl text-gray-600">Generate your decentralized health identity on the blockchain</p>
+                    </div>
+
+                    <div class="glassmorphism rounded-2xl p-8 max-w-2xl mx-auto slide-up">
+                        <form id="healthid-form" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                                    <input type="text" id="patient-name" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter your full name">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth *</label>
+                                    <input type="date" id="dob" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Aadhaar/National ID *</label>
+                                <input type="text" id="national-id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter your national ID">
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Blood Group</label>
+                                    <select id="blood-group" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option value="">Select Blood Group</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                                    <select id="gender" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option value="">Select Gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Medical Conditions</label>
+                                <textarea id="medical-conditions" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="List any existing medical conditions (optional)"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Emergency Contact</label>
+                                <input type="tel" id="emergency-contact" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Emergency contact number">
+                            </div>
+
+                            <button type="submit" class="w-full bg-primary text-white py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors transform hover:scale-105">
+                                <i class="fas fa-shield-alt mr-2"></i>
+                                Generate Secure HealthID
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Generated HealthID Display -->
+                    <div id="healthid-result" class="hidden mt-8 max-w-2xl mx-auto">
+                        <div class="glassmorphism rounded-2xl p-8 text-center">
+                            <div class="bg-success bg-opacity-10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-check-circle text-success text-3xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">HealthID Generated Successfully!</h3>
+                            <div class="bg-gray-100 rounded-lg p-4 mb-6">
+                                <p class="text-sm text-gray-600 mb-2">Your Secure HealthID:</p>
+                                <div class="flex items-center justify-between bg-white rounded-lg p-3 border-2 border-primary">
+                                    <span id="generated-healthid" class="font-mono text-lg text-primary font-semibold"></span>
+                                    <button onclick="copyHealthID()" class="text-primary hover:text-blue-700 transition-colors">
+                                        <i class="fas fa-copy text-xl"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 mb-6">Your HealthID has been securely stored on the blockchain. Save this ID safely!</p>
+                            <button onclick="showPage('ai-recommendation')" class="bg-success text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                                Continue to AI Recommendations
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 3. AI Recommendation Page -->
+        <div id="ai-recommendation" class="page">
+            <section class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-20">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-12 fade-in">
+                        <h1 class="text-4xl font-bold text-gray-800 mb-4">AI-Powered Health Recommendations</h1>
+                        <p class="text-xl text-gray-600">Get personalized scheme recommendations based on your health profile</p>
+                    </div>
+
+                    <!-- HealthID Input Section -->
+                    <div class="glassmorphism rounded-2xl p-8 max-w-2xl mx-auto mb-8 slide-up">
+                        <div class="text-center">
+                            <i class="fas fa-search text-primary text-3xl mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Enter Your HealthID</h3>
+                            <div class="flex gap-3">
+                                <input type="text" id="healthid-input" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter your HealthID">
+                                <button onclick="fetchRecommendations()" class="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-brain mr-2"></i>
+                                    Analyze
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Patient Profile Section -->
+                    <div id="patient-profile" class="hidden mb-8">
+                        <div class="glassmorphism rounded-2xl p-8">
+                            <h3 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                                <i class="fas fa-user-medical text-primary mr-3"></i>
+                                Patient Profile
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="bg-white rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-700 mb-2">Basic Information</h4>
+                                    <p class="text-gray-600"><strong>Name:</strong> <span id="profile-name">John Doe</span></p>
+                                    <p class="text-gray-600"><strong>Age:</strong> <span id="profile-age">35 years</span></p>
+                                    <p class="text-gray-600"><strong>Blood Group:</strong> <span id="profile-blood">A+</span></p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-700 mb-2">Health Status</h4>
+                                    <p class="text-gray-600"><strong>Conditions:</strong> <span id="profile-conditions">Diabetes Type 2</span></p>
+                                    <p class="text-gray-600"><strong>Risk Level:</strong> <span class="text-warning font-semibold">Medium</span></p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-700 mb-2">Eligibility Score</h4>
+                                    <div class="flex items-center">
+                                        <div class="bg-success text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-3">85</div>
+                                        <span class="text-success font-semibold">Highly Eligible</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Recommendations Section -->
+                    <div id="recommendations-section" class="hidden">
+                        <div class="glassmorphism rounded-2xl p-8">
+                            <h3 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                                <i class="fas fa-robot text-success mr-3"></i>
+                                AI-Generated Recommendations
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <!-- Recommendation 1 -->
+                                <div class="bg-white rounded-xl p-6 border-l-4 border-success hover:shadow-lg transition-shadow">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <span class="bg-success text-white px-3 py-1 rounded-full text-sm font-semibold">95% Match</span>
+                                        <i class="fas fa-heart text-success text-xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Diabetes Care Plus</h4>
+                                    <p class="text-gray-600 mb-3">Comprehensive diabetes management program with specialized care and medication coverage.</p>
+                                    <div class="space-y-2 text-sm text-gray-500">
+                                        <p><i class="fas fa-dollar-sign text-success mr-2"></i>Coverage: $5,000/year</p>
+                                        <p><i class="fas fa-clock text-warning mr-2"></i>Processing: 2-3 days</p>
+                                    </div>
+                                </div>
+
+                                <!-- Recommendation 2 -->
+                                <div class="bg-white rounded-xl p-6 border-l-4 border-primary hover:shadow-lg transition-shadow">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <span class="bg-primary text-white px-3 py-1 rounded-full text-sm font-semibold">87% Match</span>
+                                        <i class="fas fa-shield-alt text-primary text-xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">General Health Shield</h4>
+                                    <p class="text-gray-600 mb-3">Basic health insurance covering routine checkups, emergency care, and preventive treatments.</p>
+                                    <div class="space-y-2 text-sm text-gray-500">
+                                        <p><i class="fas fa-dollar-sign text-success mr-2"></i>Coverage: $3,000/year</p>
+                                        <p><i class="fas fa-clock text-warning mr-2"></i>Processing: 1-2 days</p>
+                                    </div>
+                                </div>
+
+                                <!-- Recommendation 3 -->
+                                <div class="bg-white rounded-xl p-6 border-l-4 border-warning hover:shadow-lg transition-shadow">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <span class="bg-warning text-white px-3 py-1 rounded-full text-sm font-semibold">78% Match</span>
+                                        <i class="fas fa-user-friends text-warning text-xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Family Care Package</h4>
+                                    <p class="text-gray-600 mb-3">Extended family health coverage including spouse and dependents under one plan.</p>
+                                    <div class="space-y-2 text-sm text-gray-500">
+                                        <p><i class="fas fa-dollar-sign text-success mr-2"></i>Coverage: $8,000/year</p>
+                                        <p><i class="fas fa-clock text-warning mr-2"></i>Processing: 3-5 days</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-8">
+                                <button onclick="showPage('schemes')" class="bg-success text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                                    Apply to Recommended Schemes
+                                    <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 4. Scheme Application Page -->
+        <div id="schemes" class="page">
+            <section class="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 py-20">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-12 fade-in">
+                        <h1 class="text-4xl font-bold text-gray-800 mb-4">Health Scheme Applications</h1>
+                        <p class="text-xl text-gray-600">Apply to eligible health schemes with our smart auto-apply feature</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Scheme 1: Diabetes Care Plus -->
+                        <div class="glassmorphism rounded-2xl p-8 slide-up">
+                            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-4">
+                                        <div class="bg-success bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mr-4">
+                                            <i class="fas fa-heart text-success text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-gray-800">Diabetes Care Plus</h3>
+                                            <span class="bg-success text-white px-3 py-1 rounded-full text-sm font-semibold">95% Match - Highly Recommended</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-600 mb-4">Comprehensive diabetes management program designed for Type 2 diabetes patients. Includes specialized care, regular monitoring, medication coverage, and dietary consultation.</p>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                        <div class="bg-white rounded-lg p-3">
+                                            <i class="fas fa-dollar-sign text-success mr-2"></i>
+                                            <strong>Coverage:</strong> $5,000/year
+                                        </div>
+                                        <div class="bg-white rounded-lg p-3">
+                                            <i class="fas fa-clock text-warning mr-2"></i>
+                                            <strong>Processing:</strong> 2-3 days
+                                        </div>
+                                        <div class="bg-white rounded-lg p-3">
+                                            <i class="fas fa-hospital text-primary mr-2"></i>
+                                            <strong>Network:</strong> 500+ hospitals
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lg:w-auto w-full">
+                                    <button onclick="autoApplyScheme('diabetes-care')" class="w-full lg:w-auto bg-success text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-700 transition-colors transform hover:scale-105">
+                                        <i class="fas fa-magic mr-2"></i>
+                                        Auto-Apply Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scheme 2: General Health Shield -->
+                        <div class="glassmorphism rounded-2xl p-8 slide-up">
+                            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-4">
+                                        <div class="bg-primary bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mr-4">
+                                            <i class="fas fa-shield-alt text-primary text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-gray-800">General Health Shield</h3>
+                                            <span class="bg-primary text-white px-3 py-1 rounded-full text-sm font-semibold">87% Match - Recommended</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-600 mb-4">Basic health insurance covering routine checkups, emergency care, preventive treatments, and essential medical procedures with nationwide coverage.</p>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                        <div class="bg-white rounded-lg p-3">
+                                            <i class="fas fa-dollar-sign text-success mr-2"></i>
+                                            <strong>Coverage:</strong> $3,000/year
+                                        </div>
+                                        <div class="bg-white rounded-lg p-3">
+                                            <i class="fas fa-clock text-warning mr-2"></i>
+                                            <strong>Processing:</strong> 1-2 days
+                                        </div>
+                                        <div class="bg-white rounded-lg p-3">
+                                            <i class="fas fa-hospital text-primary mr-2"></i>
+                                            <strong>Network:</strong> 800+ hospitals
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lg:w-auto w-full">
+                                    <button onclick="autoApplyScheme('general-health')" class="w-full lg:w-auto bg-primary text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors transform hover:scale-105">
+                                        <i class="fas fa-magic mr-2"></i>
+                                        Auto-Apply Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scheme 3: Family Care Package -->
+                        <div class="glassmorphism rounded-2xl p-8 slide-up">
+                            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-4">
+                                        <div class="bg-warning bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mr-4">
+                                            <i class="fas fa-user-friends text-warning text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-gray-800">Family Care Package</h3>
+                                            <span class="bg-warning text-white px-3 py-1 rounded-full text-sm font-semibold">78% Match - Good Option</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-600 mb-4">Extended family health coverage including spouse and dependents under one comprehensive plan with shared benefits and family-oriented services.</p>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                        <div class="bg-white rounded-lg p-3">
+                                            <i class="fas fa-dollar-sign text-success mr-2"></i>
+                                            <strong>Coverage:</strong> $8,000/year
+                                        </div>
+                                        <div class="bg-white rounded-lg p-3">
+                                            <i class="fas fa-clock text-warning mr-2"></i>
+                                            <strong>Processing:</strong> 3-5 days
+                                        </div>
+                                        <div class="bg-white rounded-lg p-3">
+                                            <i class="fas fa-hospital text-primary mr-2"></i>
+                                            <strong>Network:</strong> 600+ hospitals
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lg:w-auto w-full">
+                                    <button onclick="autoApplyScheme('family-care')" class="w-full lg:w-auto bg-warning text-white px-8 py-4 rounded-lg font-semibold hover:bg-yellow-600 transition-colors transform hover:scale-105">
+                                        <i class="fas fa-magic mr-2"></i>
+                                        Auto-Apply Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Application Status -->
+                    <div id="application-status" class="hidden mt-8">
+                        <div class="glassmorphism rounded-2xl p-8 text-center">
+                            <div class="bg-success bg-opacity-10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-check-circle text-success text-3xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Application Submitted Successfully!</h3>
+                            <p class="text-gray-600 mb-6">Your application has been processed and approved. Proceed to your wallet to claim your health vouchers.</p>
+                            <button onclick="showPage('wallet')" class="bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                                Go to Wallet & Claim Vouchers
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 5. Wallet & Vouchers Page -->
+        <div id="wallet" class="page">
+            <section class="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 py-20">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-12 fade-in">
+                        <h1 class="text-4xl font-bold text-gray-800 mb-4">Crypto Wallet & Health Vouchers</h1>
+                        <p class="text-xl text-gray-600">Manage your digital health vouchers and make secure payments</p>
+                    </div>
+
+                    <!-- Wallet Overview -->
+                    <div class="glassmorphism rounded-2xl p-8 mb-8 slide-up">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-2xl font-semibold text-gray-800 flex items-center">
+                                <i class="fas fa-wallet text-primary mr-3"></i>
+                                MediLinkX Wallet
+                            </h3>
+                            <div class="bg-success bg-opacity-10 text-success px-4 py-2 rounded-full text-sm font-semibold">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                Connected
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Wallet Balance -->
+                            <div class="wallet-card rounded-xl p-6 text-center">
+                                <i class="fas fa-coins text-primary text-3xl mb-4"></i>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">USDC Balance</h4>
+                                <div class="text-3xl font-bold text-primary mb-2" id="wallet-balance">$1,250.00</div>
+                                <p class="text-gray-600 text-sm">Available for payments</p>
+                            </div>
+
+                            <!-- Total Vouchers -->
+                            <div class="wallet-card rounded-xl p-6 text-center">
+                                <i class="fas fa-ticket-alt text-success text-3xl mb-4"></i>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Active Vouchers</h4>
+                                <div class="text-3xl font-bold text-success mb-2" id="voucher-count">3</div>
+                                <p class="text-gray-600 text-sm">Ready to claim</p>
+                            </div>
+
+                            <!-- Transaction History -->
+                            <div class="wallet-card rounded-xl p-6 text-center">
+                                <i class="fas fa-history text-warning text-3xl mb-4"></i>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Transactions</h4>
+                                <div class="text-3xl font-bold text-warning mb-2">12</div>
+                                <p class="text-gray-600 text-sm">Completed payments</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Vouchers -->
+                    <div class="glassmorphism rounded-2xl p-8 mb-8 slide-up">
+                        <h3 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                            <i class="fas fa-gift text-success mr-3"></i>
+                            Available Health Vouchers
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <!-- Voucher 1: Diabetes Care -->
+                            <div class="bg-white rounded-xl p-6 border-l-4 border-success hover:shadow-lg transition-shadow">
+                                <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                                    <div class="flex-1">
+                                        <div class="flex items-center mb-3">
+                                            <i class="fas fa-heart text-success text-xl mr-3"></i>
+                                            <h4 class="text-xl font-semibold text-gray-800">Diabetes Care Scheme</h4>
+                                            <span class="bg-success text-white px-3 py-1 rounded-full text-sm font-semibold ml-3">Active</span>
+                                        </div>
+                                        <p class="text-gray-600 mb-3">Comprehensive diabetes management voucher for specialized care and medications</p>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                            <div><strong>Voucher Value:</strong> $500.00</div>
+                                            <div><strong>Valid Until:</strong> Dec 31, 2024</div>
+                                            <div><strong>Network:</strong> Apollo, Max, Fortis</div>
+                                        </div>
+                                    </div>
+                                    <div class="lg:w-auto w-full">
+                                        <button onclick="claimVoucher('diabetes-care', 500)" class="w-full lg:w-auto bg-success text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                                            <i class="fas fa-hospital mr-2"></i>
+                                            Claim & Pay to Hospital
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Voucher 2: General Health -->
+                            <div class="bg-white rounded-xl p-6 border-l-4 border-primary hover:shadow-lg transition-shadow">
+                                <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                                    <div class="flex-1">
+                                        <div class="flex items-center mb-3">
+                                            <i class="fas fa-shield-alt text-primary text-xl mr-3"></i>
+                                            <h4 class="text-xl font-semibold text-gray-800">General Health Shield</h4>
+                                            <span class="bg-primary text-white px-3 py-1 rounded-full text-sm font-semibold ml-3">Active</span>
+                                        </div>
+                                        <p class="text-gray-600 mb-3">Basic health insurance voucher covering routine checkups and emergency care</p>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                            <div><strong>Voucher Value:</strong> $300.00</div>
+                                            <div><strong>Valid Until:</strong> Dec 31, 2024</div>
+                                            <div><strong>Network:</strong> All major hospitals</div>
+                                        </div>
+                                    </div>
+                                    <div class="lg:w-auto w-full">
+                                        <button onclick="claimVoucher('general-health', 300)" class="w-full lg:w-auto bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                                            <i class="fas fa-hospital mr-2"></i>
+                                            Claim & Pay to Hospital
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Voucher 3: Emergency Care -->
+                            <div class="bg-white rounded-xl p-6 border-l-4 border-warning hover:shadow-lg transition-shadow">
+                                <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                                    <div class="flex-1">
+                                        <div class="flex items-center mb-3">
+                                            <i class="fas fa-ambulance text-warning text-xl mr-3"></i>
+                                            <h4 class="text-xl font-semibold text-gray-800">Emergency Care Voucher</h4>
+                                            <span class="bg-warning text-white px-3 py-1 rounded-full text-sm font-semibold ml-3">Active</span>
+                                        </div>
+                                        <p class="text-gray-600 mb-3">Emergency medical care voucher for urgent treatments and procedures</p>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                            <div><strong>Voucher Value:</strong> $1,000.00</div>
+                                            <div><strong>Valid Until:</strong> Dec 31, 2024</div>
+                                            <div><strong>Network:</strong> Emergency centers</div>
+                                        </div>
+                                    </div>
+                                    <div class="lg:w-auto w-full">
+                                        <button onclick="claimVoucher('emergency-care', 1000)" class="w-full lg:w-auto bg-warning text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors">
+                                            <i class="fas fa-hospital mr-2"></i>
+                                            Claim & Pay to Hospital
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hospital Selection Modal (Hidden by default) -->
+                    <div id="hospital-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+                            <h3 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Select Hospital</h3>
+                            <div class="space-y-3">
+                                <button onclick="selectHospital('Apollo Hospital')" class="w-full text-left p-4 border border-gray-300 rounded-lg hover:border-primary hover:bg-blue-50 transition-colors">
+                                    <div class="font-semibold text-gray-800">Apollo Hospital</div>
+                                    <div class="text-gray-600 text-sm">Sector 26, Delhi - 24/7 Available</div>
+                                </button>
+                                <button onclick="selectHospital('Max Healthcare')" class="w-full text-left p-4 border border-gray-300 rounded-lg hover:border-primary hover:bg-blue-50 transition-colors">
+                                    <div class="font-semibold text-gray-800">Max Healthcare</div>
+                                    <div class="text-gray-600 text-sm">Saket, Delhi - Specialized Care</div>
+                                </button>
+                                <button onclick="selectHospital('Fortis Hospital')" class="w-full text-left p-4 border border-gray-300 rounded-lg hover:border-primary hover:bg-blue-50 transition-colors">
+                                    <div class="font-semibold text-gray-800">Fortis Hospital</div>
+                                    <div class="text-gray-600 text-sm">Gurgaon - Emergency Care</div>
+                                </button>
+                            </div>
+                            <button onclick="closeHospitalModal()" class="w-full mt-6 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 6. Completion & PDF Generation Page -->
+        <div id="receipt" class="page">
+            <section class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-20">
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-12 fade-in">
+                        <h1 class="text-4xl font-bold text-gray-800 mb-4">Payment Completed Successfully</h1>
+                        <p class="text-xl text-gray-600">Your health voucher has been processed and payment completed</p>
+                    </div>
+
+                    <!-- Success Message -->
+                    <div class="glassmorphism rounded-2xl p-8 text-center mb-8 slide-up">
+                        <div class="bg-success bg-opacity-10 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-check-circle text-success text-4xl"></i>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-800 mb-4">Transaction Successful!</h3>
+                        <p class="text-lg text-gray-600 mb-6">Your health voucher payment has been successfully processed and transferred to the hospital.</p>
+                        <div class="bg-white rounded-lg p-4 mb-6 text-left max-w-md mx-auto">
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div><strong>Transaction ID:</strong></div>
+                                <div class="font-mono text-primary" id="transaction-id">TXN789ABC123</div>
+                                <div><strong>Amount:</strong></div>
+                                <div class="text-success font-semibold" id="transaction-amount">$500.00</div>
+                                <div><strong>Hospital:</strong></div>
+                                <div id="selected-hospital">Apollo Hospital</div>
+                                <div><strong>Status:</strong></div>
+                                <div class="text-success font-semibold">✅ Completed</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PDF Receipt Preview -->
+                    <div class="glassmorphism rounded-2xl p-8 slide-up">
+                        <h3 class="text-2xl font-semibold text-gray-800 mb-6 text-center flex items-center justify-center">
+                            <i class="fas fa-file-pdf text-danger mr-3"></i>
+                            Digital Receipt
+                        </h3>
+                        
+                        <!-- Receipt Preview -->
+                        <div id="receipt-content" class="bg-white rounded-xl p-8 max-w-lg mx-auto border-2 border-gray-200 mb-8">
+                            <div class="text-center mb-6">
+                                <i class="fas fa-heartbeat text-primary text-3xl mb-3"></i>
+                                <h2 class="text-2xl font-bold text-gray-800">MediLinkX</h2>
+                                <p class="text-gray-600">Health Payment Receipt</p>
+                            </div>
+                            
+                            <div class="border-t border-b border-gray-200 py-4 my-4">
+                                <div class="grid grid-cols-2 gap-2 text-sm">
+                                    <div class="font-semibold">Patient HealthID:</div>
+                                    <div class="font-mono text-primary text-xs">0x7A2F8B9C4E6D1A5F8B9C2E6D</div>
+                                    
+                                    <div class="font-semibold">Patient Name:</div>
+                                    <div>John Doe</div>
+                                    
+                                    <div class="font-semibold">Hospital:</div>
+                                    <div id="receipt-hospital">Apollo Hospital</div>
+                                    
+                                    <div class="font-semibold">Scheme:</div>
+                                    <div id="receipt-scheme">Diabetes Care Plus</div>
+                                    
+                                    <div class="font-semibold">Voucher Amount:</div>
+                                    <div class="text-success font-semibold" id="receipt-amount">$500.00</div>
+                                    
+                                    <div class="font-semibold">Transaction ID:</div>
+                                    <div class="font-mono text-xs" id="receipt-txn">TXN789ABC123</div>
+                                    
+                                    <div class="font-semibold">Date & Time:</div>
+                                    <div id="receipt-date">Dec 15, 2024 - 2:30 PM</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h4 class="font-semibold text-gray-700 mb-2">AI Recommendation Summary:</h4>
+                                <p class="text-gray-600 text-sm">Patient matched 95% with Diabetes Care Plus scheme based on medical history and current health profile. Automatic approval granted for comprehensive diabetes management services.</p>
+                            </div>
+                            
+                            <div class="text-center">
+                                <div class="bg-success bg-opacity-10 text-success px-4 py-2 rounded-full inline-flex items-center">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    <span class="font-semibold">Status: ✅ Completed</span>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-4 pt-4 border-t border-gray-200">
+                                <p class="text-xs text-gray-500">Generated by MediLinkX Blockchain Platform</p>
+                                <p class="text-xs text-gray-500">Verified on Ethereum Network</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Download Buttons -->
+                        <div class="text-center space-y-4">
+                            <button onclick="downloadPDF()" class="bg-danger text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors mr-4">
+                                <i class="fas fa-download mr-2"></i>
+                                Download PDF Receipt
+                            </button>
+                            <button onclick="showPage('wallet')" class="bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-wallet mr-2"></i>
+                                Back to Wallet
+                            </button>
+                        </div>
+                        
+                        <!-- Next Steps -->
+                        <div class="mt-8 bg-blue-50 rounded-lg p-6">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fas fa-lightbulb text-warning mr-2"></i>
+                                What's Next?
+                            </h4>
+                            <ul class="space-y-2 text-gray-600">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-success mr-2 mt-1"></i>
+                                    Visit the selected hospital with your HealthID and receipt
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-success mr-2 mt-1"></i>
+                                    Present your digital receipt for verification
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-success mr-2 mt-1"></i>
+                                    Receive your healthcare services as per the scheme benefits
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 7. About / Info Page -->
+        <div id="about" class="page">
+            <section class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-20">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-16 fade-in">
+                        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6">About MediLinkX</h1>
+                        <p class="text-xl text-gray-600 max-w-3xl mx-auto">Revolutionizing healthcare through blockchain technology, artificial intelligence, and decentralized identity management</p>
+                    </div>
+
+                    <!-- Vision Section -->
+                    <div class="glassmorphism rounded-2xl p-8 mb-8 slide-up">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                            <div>
+                                <h2 class="text-3xl font-bold text-gray-800 mb-6">Our Vision</h2>
+                                <p class="text-gray-600 mb-4">MediLinkX envisions a world where healthcare is truly patient-centric, transparent, and accessible to everyone. By leveraging the power of Web3 technology and artificial intelligence, we're building a decentralized healthcare ecosystem that puts control back in the hands of patients.</p>
+                                <p class="text-gray-600 mb-6">Our platform eliminates traditional barriers, reduces fraud, and ensures that health benefits reach those who need them most, when they need them most.</p>
+                                <div class="flex flex-wrap gap-4">
+                                    <div class="bg-primary bg-opacity-10 text-primary px-4 py-2 rounded-full text-sm font-semibold">
+                                        <i class="fas fa-shield-alt mr-2"></i>Security First
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 text-success px-4 py-2 rounded-full text-sm font-semibold">
+                                        <i class="fas fa-users mr-2"></i>Patient-Centric
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 text-warning px-4 py-2 rounded-full text-sm font-semibold">
+                                        <i class="fas fa-robot mr-2"></i>AI-Powered
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <!-- Healthcare technology concept image -->
+                                <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Modern healthcare technology and digital transformation" class="rounded-xl shadow-lg w-full h-auto">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Features Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                        <!-- Transparency -->
+                        <div class="glassmorphism rounded-xl p-6 text-center slide-up">
+                            <div class="bg-primary bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-eye text-primary text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">Complete Transparency</h3>
+                            <p class="text-gray-600">Every transaction is recorded on the blockchain, ensuring complete transparency and traceability of health benefits and payments.</p>
+                        </div>
+
+                        <!-- Fraud Prevention -->
+                        <div class="glassmorphism rounded-xl p-6 text-center slide-up">
+                            <div class="bg-danger bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-lock text-danger text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">Fraud-Proof System</h3>
+                            <p class="text-gray-600">Blockchain technology and smart contracts eliminate the possibility of fraud, ensuring benefits reach genuine patients only.</p>
+                        </div>
+
+                        <!-- AI Automation -->
+                        <div class="glassmorphism rounded-xl p-6 text-center slide-up">
+                            <div class="bg-success bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-brain text-success text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">AI-Powered Automation</h3>
+                            <p class="text-gray-600">Intelligent algorithms automatically match patients with eligible schemes and streamline the entire application process.</p>
+                        </div>
+
+                        <!-- Instant Payments -->
+                        <div class="glassmorphism rounded-xl p-6 text-center slide-up">
+                            <div class="bg-warning bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-bolt text-warning text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">Instant Payments</h3>
+                            <p class="text-gray-600">Crypto-based vouchers enable instant payments to healthcare providers, eliminating paperwork and processing delays.</p>
+                        </div>
+
+                        <!-- Global Access -->
+                        <div class="glassmorphism rounded-xl p-6 text-center slide-up">
+                            <div class="bg-primary bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-globe text-primary text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">Global Accessibility</h3>
+                            <p class="text-gray-600">Decentralized platform ensures healthcare benefits are accessible from anywhere in the world, breaking geographical barriers.</p>
+                        </div>
+
+                        <!-- Data Privacy -->
+                        <div class="glassmorphism rounded-xl p-6 text-center slide-up">
+                            <div class="bg-success bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-user-shield text-success text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">Privacy Protection</h3>
+                            <p class="text-gray-600">Your health data remains encrypted and under your complete control, with selective sharing based on your permissions.</p>
+                        </div>
+                    </div>
+
+                    <!-- Technology Stack -->
+                    <div class="glassmorphism rounded-2xl p-8 mb-8 slide-up">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Powered by Cutting-Edge Technology</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div class="bg-white rounded-lg p-6 text-center">
+                                <i class="fab fa-ethereum text-4xl text-primary mb-3"></i>
+                                <h4 class="font-semibold text-gray-800 mb-2">Ethereum Blockchain</h4>
+                                <p class="text-gray-600 text-sm">Secure, decentralized infrastructure</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-6 text-center">
+                                <i class="fas fa-brain text-4xl text-success mb-3"></i>
+                                <h4 class="font-semibold text-gray-800 mb-2">Machine Learning</h4>
+                                <p class="text-gray-600 text-sm">Intelligent recommendation engine</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-6 text-center">
+                                <i class="fas fa-file-contract text-4xl text-warning mb-3"></i>
+                                <h4 class="font-semibold text-gray-800 mb-2">Smart Contracts</h4>
+                                <p class="text-gray-600 text-sm">Automated, trustless execution</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-6 text-center">
+                                <i class="fas fa-mobile-alt text-4xl text-danger mb-3"></i>
+                                <h4 class="font-semibold text-gray-800 mb-2">Progressive Web App</h4>
+                                <p class="text-gray-600 text-sm">Accessible across all devices</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Team Section -->
+                    <div class="glassmorphism rounded-2xl p-8 slide-up">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Meet Our Team</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div class="bg-white rounded-xl p-6 text-center">
+                                <!-- Team member photo -->
+                                <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400&q=80" alt="Dr. Sarah Johnson - Chief Medical Officer" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover">
+                                <h4 class="font-semibold text-gray-800 mb-2">Dr. Sarah Johnson</h4>
+                                <p class="text-primary font-medium mb-2">Chief Medical Officer</p>
+                                <p class="text-gray-600 text-sm">20+ years in healthcare innovation and digital health transformation</p>
+                            </div>
+                            <div class="bg-white rounded-xl p-6 text-center">
+                                <!-- Team member photo -->
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400&q=80" alt="Alex Chen - Lead Blockchain Developer" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover">
+                                <h4 class="font-semibold text-gray-800 mb-2">Alex Chen</h4>
+                                <p class="text-success font-medium mb-2">Lead Blockchain Developer</p>
+                                <p class="text-gray-600 text-sm">Expert in Web3 technologies and decentralized application development</p>
+                            </div>
+                            <div class="bg-white rounded-xl p-6 text-center">
+                                <!-- Team member photo -->
+                                <img src="https://pixabay.com/get/gc894ae639d15217a56f32eac6645ae6005370b6ad37ac16a31470fd9dece7dd7517126768d932ecac48d87c1e19b2303f12e97af739bdce1e863ffdc3b6be0ce_1280.jpg" alt="Maria Rodriguez - AI/ML Engineer" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover">
+                                <h4 class="font-semibold text-gray-800 mb-2">Maria Rodriguez</h4>
+                                <p class="text-warning font-medium mb-2">AI/ML Engineer</p>
+                                <p class="text-gray-600 text-sm">Specialist in healthcare AI and predictive analytics systems</p>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-8">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Get in Touch</h3>
+                            <div class="flex flex-wrap justify-center gap-6">
+                                <a href="mailto:team@medilinkx.com" class="flex items-center text-gray-600 hover:text-primary transition-colors">
+                                    <i class="fas fa-envelope mr-2"></i>
+                                    team@medilinkx.com
+                                </a>
+                                <a href="#" class="flex items-center text-gray-600 hover:text-primary transition-colors">
+                                    <i class="fab fa-linkedin mr-2"></i>
+                                    LinkedIn
+                                </a>
+                                <a href="#" class="flex items-center text-gray-600 hover:text-primary transition-colors">
+                                    <i class="fab fa-github mr-2"></i>
+                                    GitHub
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <script>
+        // Global state
+        let currentVoucherData = {};
+        let walletBalance = 1250;
+
+        // Navigation functions
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // Show selected page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                
+                // Add animation classes
+                targetPage.classList.add('fade-in');
+                setTimeout(() => {
+                    targetPage.classList.remove('fade-in');
+                }, 600);
+            }
+            
+            // Close mobile menu if open
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.add('hidden');
+        }
+
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        // HealthID Generation
+        document.getElementById('healthid-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Generate mock HealthID
+            const healthId = '0x' + Math.random().toString(16).substr(2, 22).toUpperCase();
+            document.getElementById('generated-healthid').textContent = healthId;
+            
+            // Show result
+            document.getElementById('healthid-result').classList.remove('hidden');
+            document.getElementById('healthid-result').classList.add('slide-up');
+            
+            // Store in localStorage for other pages
+            localStorage.setItem('healthId', healthId);
+            localStorage.setItem('patientName', document.getElementById('patient-name').value);
+        });
+
+        function copyHealthID() {
+            const healthId = document.getElementById('generated-healthid').textContent;
+            navigator.clipboard.writeText(healthId).then(() => {
+                showNotification('HealthID copied to clipboard!', 'success');
+            });
+        }
+
+        // AI Recommendations
+        function fetchRecommendations() {
+            const healthIdInput = document.getElementById('healthid-input').value;
+            if (!healthIdInput) {
+                showNotification('Please enter a valid HealthID', 'error');
+                return;
+            }
+            
+            // Show patient profile
+            document.getElementById('patient-profile').classList.remove('hidden');
+            document.getElementById('patient-profile').classList.add('slide-up');
+            
+            // Show recommendations after a delay
+            setTimeout(() => {
+                document.getElementById('recommendations-section').classList.remove('hidden');
+                document.getElementById('recommendations-section').classList.add('slide-up');
+            }, 1000);
+            
+            showNotification('AI analysis completed successfully!', 'success');
+        }
+
+        // Scheme Application
+        function autoApplyScheme(schemeType) {
+            // Show loading state
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+                // Show success
+                document.getElementById('application-status').classList.remove('hidden');
+                document.getElementById('application-status').classList.add('slide-up');
+                
+                showNotification('Application submitted and approved!', 'success');
+            }, 2000);
+        }
+
+        // Wallet & Voucher Functions
+        function claimVoucher(voucherType, amount) {
+            currentVoucherData = {
+                type: voucherType,
+                amount: amount
+            };
+            
+            // Show hospital selection modal
+            document.getElementById('hospital-modal').classList.remove('hidden');
+        }
+
+        function selectHospital(hospitalName) {
+            // Close modal
+            document.getElementById('hospital-modal').classList.add('hidden');
+            
+            // Simulate payment process
+            showNotification('Processing payment...', 'info');
+            
+            setTimeout(() => {
+                // Update wallet balance
+                walletBalance -= currentVoucherData.amount;
+                document.getElementById('wallet-balance').textContent = `$${walletBalance.toFixed(2)}`;
+                
+                // Update voucher count
+                const currentCount = parseInt(document.getElementById('voucher-count').textContent);
+                document.getElementById('voucher-count').textContent = currentCount - 1;
+                
+                // Show success notification
+                showNotification(
+                    `$${currentVoucherData.amount} voucher successfully transferred to ${hospitalName}. Transaction ID: TXN${Math.random().toString(36).substr(2, 9).toUpperCase()}. Funds received.`,
+                    'success',
+                    8000
+                );
+                
+                // Store transaction data
+                localStorage.setItem('lastTransaction', JSON.stringify({
+                    hospital: hospitalName,
+                    amount: currentVoucherData.amount,
+                    scheme: getSchemeNameFromType(currentVoucherData.type),
+                    txnId: `TXN${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+                    date: new Date().toLocaleString()
+                }));
+                
+                // Navigate to receipt page
+                setTimeout(() => {
+                    showPage('receipt');
+                    updateReceiptData();
+                }, 2000);
+            }, 3000);
+        }
+
+        function closeHospitalModal() {
+            document.getElementById('hospital-modal').classList.add('hidden');
+        }
+
+        function getSchemeNameFromType(type) {
+            const schemes = {
+                'diabetes-care': 'Diabetes Care Plus',
+                'general-health': 'General Health Shield',
+                'emergency-care': 'Emergency Care Voucher'
+            };
+            return schemes[type] || 'Health Scheme';
+        }
+
+        // Receipt & PDF Functions
+        function updateReceiptData() {
+            const transaction = JSON.parse(localStorage.getItem('lastTransaction') || '{}');
+            if (transaction.hospital) {
+                document.getElementById('selected-hospital').textContent = transaction.hospital;
+                document.getElementById('transaction-amount').textContent = `$${transaction.amount}`;
+                document.getElementById('transaction-id').textContent = transaction.txnId;
+                document.getElementById('receipt-hospital').textContent = transaction.hospital;
+                document.getElementById('receipt-scheme').textContent = transaction.scheme;
+                document.getElementById('receipt-amount').textContent = `$${transaction.amount}`;
+                document.getElementById('receipt-txn').textContent = transaction.txnId;
+                document.getElementById('receipt-date').textContent = transaction.date;
+            }
+        }
+
+        function downloadPDF() {
+            // Check if jsPDF is loaded
+            if (typeof window.jspdf === 'undefined') {
+                showNotification('PDF generation library not loaded. Please try again.', 'error');
+                return;
+            }
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Header
+            doc.setFontSize(20);
+            doc.text('MediLinkX', 105, 20, { align: 'center' });
+            doc.setFontSize(14);
+            doc.text('Health Payment Receipt', 105, 30, { align: 'center' });
+            
+            // Patient Info
+            doc.setFontSize(12);
+            const healthId = localStorage.getItem('healthId') || '0x7A2F8B9C4E6D1A5F8B9C2E6D';
+            const patientName = localStorage.getItem('patientName') || 'John Doe';
+            const transaction = JSON.parse(localStorage.getItem('lastTransaction') || '{}');
+            
+            doc.text(`Patient HealthID: ${healthId}`, 20, 50);
+            doc.text(`Patient Name: ${patientName}`, 20, 60);
+            doc.text(`Hospital: ${transaction.hospital || 'Apollo Hospital'}`, 20, 70);
+            doc.text(`Scheme: ${transaction.scheme || 'Diabetes Care Plus'}`, 20, 80);
+            doc.text(`Voucher Amount: $${transaction.amount || '500.00'}`, 20, 90);
+            doc.text(`Transaction ID: ${transaction.txnId || 'TXN789ABC123'}`, 20, 100);
+            doc.text(`Date & Time: ${transaction.date || new Date().toLocaleString()}`, 20, 110);
+            
+            // AI Summary
+            doc.text('AI Recommendation Summary:', 20, 130);
+            const summaryText = 'Patient matched 95% with Diabetes Care Plus scheme based on medical history and current health profile. Automatic approval granted for comprehensive diabetes management services.';
+            const splitText = doc.splitTextToSize(summaryText, 170);
+            doc.text(splitText, 20, 140);
+            
+            // Status
+            doc.text('Status: ✅ Completed', 20, 170);
+            
+            // Footer
+            doc.text('Generated by MediLinkX Blockchain Platform', 105, 280, { align: 'center' });
+            doc.text('Verified on Ethereum Network', 105, 290, { align: 'center' });
+            
+            // Save PDF
+            doc.save('medilinkx-receipt.pdf');
+            showNotification('PDF receipt downloaded successfully!', 'success');
+        }
+
+        // Notification System
+        function showNotification(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            
+            const colors = {
+                success: 'bg-success',
+                error: 'bg-danger',
+                warning: 'bg-warning',
+                info: 'bg-primary'
+            };
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            
+            notification.className = `notification-popup ${colors[type]} text-white px-6 py-4 rounded-lg shadow-lg max-w-sm`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="${icons[type]} mr-3"></i>
+                    <span class="flex-1">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Auto remove
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, duration);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current date in receipt
+            document.getElementById('receipt-date').textContent = new Date().toLocaleString();
+            
+            // Load any stored data
+            const healthId = localStorage.getItem('healthId');
+            if (healthId) {
+                document.getElementById('healthid-input').value = healthId;
+            }
+        });
+    </script>
+</body>
+</html>

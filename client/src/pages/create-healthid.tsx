@@ -23,7 +23,10 @@ export default function CreateHealthId() {
   const { toast } = useToast();
 
   const handleVerifyAbhaId = async () => {
-    if (!abhaIdInput.trim()) {
+    // Trim and validate input
+    const trimmedAbhaId = abhaIdInput.trim();
+    
+    if (!trimmedAbhaId) {
       toast({
         title: "Error",
         description: "Please enter a valid ABHA ID",
@@ -32,7 +35,7 @@ export default function CreateHealthId() {
       return;
     }
 
-    if (abhaIdInput.length !== 14) {
+    if (trimmedAbhaId.length !== 14) {
       toast({
         title: "Invalid ABHA ID",
         description: "ABHA ID must be exactly 14 characters long",
@@ -41,39 +44,90 @@ export default function CreateHealthId() {
       return;
     }
 
+    // Validate it's all digits
+    if (!/^\d{14}$/.test(trimmedAbhaId)) {
+      toast({
+        title: "Invalid ABHA ID",
+        description: "ABHA ID must contain only digits",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsVerifying(true);
     
     try {
-      // Simulate verification process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Fetch user profile from API
+      const response = await fetch(`/api/wallet/user/${trimmedAbhaId}`);
       
-      // Create mock verified user profile
+      if (!response.ok) {
+        if (response.status === 404) {
+          toast({
+            title: "User Not Found",
+            description: `ABHA ID ${trimmedAbhaId} is not registered. Please run 'npm run seed:users' to seed the database with demo users, or register this ABHA ID first.`,
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Try to get error message from response
+        let errorMessage = 'Failed to fetch user profile';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If response isn't JSON, use default message
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success || !data.user) {
+        throw new Error('Invalid response from server');
+      }
+      
+      const user = data.user;
+      
+      // Create verified user profile from API data
       const profile: UserProfile = {
-        abha_id: abhaIdInput,
-        name: "John Doe",
-        dateOfBirth: "1988-05-15",
-        address: "123 Healthcare Street, Mumbai, Maharashtra - 400001",
-        walletBalance: 1250,
-        coinbaseAddress: "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6"
+        abha_id: user.abha_id,
+        name: user.name,
+        dateOfBirth: user.dateOfBirth || "1988-05-15",
+        address: user.address || "Address not available",
+        walletBalance: user.wallet_balance || 0,
+        coinbaseAddress: user.coinbase_wallet_address || "0x0000000000000000000000000000000000000000"
       };
       
       setUserProfile(profile);
       setIsVerified(true);
       
-      // Store ABHA ID in localStorage
-      localStorage.setItem('abha_id', abhaIdInput);
+      // Store ABHA ID and user data in localStorage
+      localStorage.setItem('abha_id', trimmedAbhaId);
+      localStorage.setItem('user_profile', JSON.stringify(user));
       
       toast({
         title: "ABHA ID Verified Successfully!",
         description: `Welcome back, ${profile.name}! Your health profile has been loaded.`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Verification error:', error);
-      toast({
-        title: "Verification Failed",
-        description: "Failed to verify ABHA ID. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Check if it's a network error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        toast({
+          title: "Connection Error",
+          description: "Cannot connect to server. Please ensure the server is running on port 5000.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Verification Failed",
+          description: error.message || "Failed to verify ABHA ID. Please try again or ensure the server is running.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsVerifying(false);
     }
@@ -103,9 +157,15 @@ export default function CreateHealthId() {
                     <Input
                       placeholder="Enter your 14-digit ABHA ID"
                       value={abhaIdInput}
-                      onChange={(e) => setAbhaIdInput(e.target.value)}
+                      onChange={(e) => {
+                        // Only allow digits, remove any non-digit characters
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 14);
+                        setAbhaIdInput(value);
+                      }}
                       className="flex-1 text-center text-lg font-mono"
                       maxLength={14}
+                      type="text"
+                      inputMode="numeric"
                     />
                     <Button 
                       onClick={handleVerifyAbhaId}
